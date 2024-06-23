@@ -40,7 +40,7 @@ volumes:
 
 | env variable | description |
 |--|--|
-| SCHEDULE | [tokio-cron-scheduler](https://docs.rs/crate/tokio-cron-scheduler/latest) specifying the interval between postgres backups. Defaults to `0 0 */24 * * * *`. |
+| SCHEDULE | [Cron Syntax in the Job Scheduler](https://en.wikipedia.org/wiki/Cron) specifying the interval between postgres backups. Defaults to `0 0 */24 * * * *`. |
 | BACKUP_DIR | Directory to save the backup at. Defaults to `/backup`. |
 | VOLUME | Volume to be backuped|
 | MOUNTED_FOLDER | Folder to be mounted|
