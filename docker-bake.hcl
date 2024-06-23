@@ -7,7 +7,7 @@ variable "REGISTRY_PREFIX" {
 }
 
 variable "IMAGE_NAME" {
-    default = "mariadb-backup"
+    default = "volume-backup"
 }
 
 target "latest" {

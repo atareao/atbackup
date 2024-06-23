@@ -1,0 +1,19 @@
+services:
+  backup:
+    image: atareao/volume-backup
+    container_name: backup
+    restart: always
+    init: true
+    environment:
+      SCHEDULE: "0 3 * * *"
+      BACKUP_DIR: "/backup"
+      VOLUME: "sample1"
+      MOUNTED_FOLDER: "/tmp/folder1"
+      KEEP_MONTHS: 3
+    volumes:
+      - backup:/backup:rw
+      - sample1:/tmp/folder1:ro
+
+volumes:
+  backup: {}
+  sample1: {}

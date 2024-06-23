@@ -27,8 +27,8 @@ set -o nounset
 
 echo "=== Generate crontab.txt ==="
 echo "$HOME"
-SCHEDULE="${SCHEDULE:-0 */24 * * *}"
-echo "${SCHEDULE} /bin/sh /backup.sh >> /proc/1/fd/1" >> /cronitab/dockerus
+SCHEDULE="${SCHEDULE:-0 2 * * *}"
+echo "${SCHEDULE} /bin/sh /backup.sh >> /proc/1/fd/1" >> /cronitab/root
 
 LOGLEVEL=${LOGLEVEL:-debug}
 echo "Set log level to '${LOGLEVEL}'"
