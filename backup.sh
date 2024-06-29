@@ -70,5 +70,5 @@ done
 
 # Post-backup hook
 if [ -d "${HOOKS_DIR}" ]; then
-  run-parts -a "prepostbackup" --reverse --exit-on-error "${HOOKS_DIR}"
+  run-parts -a "pos-tbackup" --reverse --exit-on-error "${HOOKS_DIR}"
 fi
