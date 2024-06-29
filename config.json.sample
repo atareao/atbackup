@@ -1,0 +1,30 @@
+{
+    "repositories": [
+        {
+            "bin": "/usr/bin/borg",
+            "path": "host:/home/backupser/test",
+            "pass": "12345678"
+        }
+    ],
+    "include": [
+        "/backup",
+        "/html/wp-content"
+    ],
+    "exclude": [
+        "*.aup",
+        "*.mp3",
+        "/data/rust/*/target"
+    ],
+    "mariadb": [
+        {
+            "host": "mariadb",
+            "port": "3306",
+            "password": "mypass"
+        }
+    ],
+    "prune": {
+        "within": "5d",
+        "weekly": "2",
+        "monthly": "2"
+    }
+}

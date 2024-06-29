@@ -1,0 +1,11 @@
+Host host
+    User backupuser
+    Hostname xxx.xxx.xxx.xxx
+    Port 22
+    IdentityFile ~/.ssh/id_backupuser
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 30
+    IdentitiesOnly yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
