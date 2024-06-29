@@ -4,6 +4,11 @@
             "bin": "/usr/bin/borg",
             "path": "host:/home/backupser/test",
             "pass": "12345678"
+        },
+        {
+            "bin": "/usr/bin/borg",
+            "path": "/tmp/local_backup",
+            "pass": "12345678"
         }
     ],
     "include": [

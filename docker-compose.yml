@@ -10,8 +10,10 @@ services:
       - ./config.json:/config.json
       - ./config_ssh.txt:/config_ssh.txt
       - ./id_backupuser:/root/.ssh/id_backupuser
-      - ./tmp/ejemplo:/tmp/ejemplo
+      - atbackup:/backup
+      - local_backup:/tmp/local_backup
 
 volumes:
-  backup: {}
-  sample1: {}
+  atbackup: {}
+  local_backup:
+    external: true

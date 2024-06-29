@@ -1,8 +1,8 @@
-![Docker pulls](https://img.shields.io/docker/pulls/atareao/mariadb-backup)
+![Docker pulls](https://img.shields.io/docker/pulls/atareao/atbackup)
 
-# volume-backup
+# atbackup
 
-Volume Backup to the local filesystem with monthly rotating backups. Only one volume can be backup, but many folders in this volume.
+atabakcup makes dump of MariaDB databases and folders of directories using borgbackup.
 
 Supports the following Docker architectures: `linux/amd64`, `linux/arm64`.
 
@@ -22,29 +22,87 @@ services:
     init: true
     environment:
       SCHEDULE: "0 3 * * *"
-      BACKUP_DIR: "/backup"
-      VOLUME: "sample1"
-      MOUNTED_FOLDER: "/tmp/folder1"
-      KEEP_MONTHS: 3
     volumes:
-      - backup:/backup:rw
-      - sample1:/tmp/folder1:ro
+      - ./config.json:/config.json
+      - ./config_ssh.txt:/config_ssh.txt
+      - ./id_backupuser:/root/.ssh/id_backupuser
+      - atbackup:/backup
+      - local_backup:/tmp/local_backup
 
 volumes:
-  backup: {}
-  sample1: {}
-
+  atbackup: {}
+  local_backup:
+    external: true
 ```
+
+* `atbackup` volume stores the sql database
+* `local_backup` volume stores a local backup.
 
 ### Environment Variables
 
 | env variable | description |
 |--|--|
 | SCHEDULE | [Cron Syntax in the Job Scheduler](https://en.wikipedia.org/wiki/Cron) specifying the interval between postgres backups. Defaults to `0 0 */24 * * * *`. |
-| BACKUP_DIR | Directory to save the backup at. Defaults to `/backup`. |
-| VOLUME | Volume to be backuped|
-| MOUNTED_FOLDER | Folder to be mounted|
-| KEEP_MONTHS | Number of monthly backups to keep before removal. Defaults to `6`. |
+
+### config.json
+
+This files is the configuration you need to backup. For example,
+
+* `repositories` the configuration for all repositories where you want to save the backup.
+* `include` are the directories that you want to make a backup
+* `exclude` are folders you want to exclude
+* `mariadb` are MariaDB servers. This servers must be in the same netrwork
+* `prune`, it's the configuration to clean older backup using retention policies, as `whitin`, `weekly` and `monthly`
+
+```json
+{
+    "repositories": [
+        {
+            "bin": "/usr/bin/borg",
+            "path": "host:/home/backupser/test",
+            "pass": "12345678"
+        },
+        {
+            "bin": "/usr/bin/borg",
+            "path": "/tmp/local_backup",
+            "pass": "12345678"
+        }
+    ],
+    "include": [
+        "/backup",
+        "/html/wp-content"
+    ],
+    "exclude": [
+        "*.aup",
+        "*.mp3",
+        "/data/rust/*/target"
+    ],
+    "mariadb": [
+        {
+            "host": "mariadb",
+            "port": "3306",
+            "password": "mypass"
+        }
+    ],
+    "prune": {
+        "within": "5d",
+        "weekly": "2",
+        "monthly": "2"
+    }
+}
+```
+
+### Configure remote directories
+
+To configure remote directories you must run this command,
+
+```bash
+borg init --encryption repokey <directory>
+```
+
+In the previous sample 
+
+
 
 
 ### How the backups folder works?
