@@ -6,6 +6,7 @@ RUN apk add --update \
             --no-cache \
             openssh~=9.7 \
             tzdata~=2024 \
+            curl~=8.8 \
             borgbackup~=1.2 \
             mariadb-client~=10.11 \
             jq~=1.7 \

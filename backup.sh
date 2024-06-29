@@ -13,7 +13,8 @@ fi
 
 # Pre-backup hook
 if [ -d "${HOOKS_DIR}" ]; then
-  run-parts -a "pre-backup" --exit-on-error "${HOOKS_DIR}"
+    echo "=== Running Pre-backup"
+    run-parts -a "pre-backup" --exit-on-error "${HOOKS_DIR}"
 fi
 
 # Print date
@@ -70,5 +71,6 @@ done
 
 # Post-backup hook
 if [ -d "${HOOKS_DIR}" ]; then
-  run-parts -a "pos-tbackup" --reverse --exit-on-error "${HOOKS_DIR}"
+    echo "=== Running Post-backup"
+    run-parts -a "post-backup" --reverse --exit-on-error "${HOOKS_DIR}"
 fi

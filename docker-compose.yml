@@ -6,10 +6,14 @@ services:
     init: true
     environment:
       SCHEDULE: "0 3 * * *"
+      MATRIX_HOST: "$MATRIX_HOST"
+      MATRIX_TOKEN: "$MATRIX_TOKEN"
+      MATRIX_ROOM: "$MATRIX_ROOM"
     volumes:
       - ./config.json:/config.json
       - ./config_ssh.txt:/config_ssh.txt
       - ./id_backupuser:/root/.ssh/id_backupuser
+      - ./hooks:/hooks
       - atbackup:/backup
       - local_backup:/tmp/local_backup
 

@@ -1,13 +1,15 @@
 #!/bin/sh
-
 set -e
+BACKUP_HOST=atareao
+DATE=$(date)
 
 function send_message(){
     MESSAGE="$@"
     TS=$(date +%s%3N)
     ENDPOINT="https://${MATRIX_HOST}/_matrix/client/v3/rooms/${MATRIX_ROOM}:${MATRIX_HOST}/send/m.room.message/${TS}"
-    curl --request POST \
-         --url "${WEBHOOK_URL}" \
+    echo $ENDPOINT
+    curl --request PUT \
+         --url "$ENDPOINT" \
          --header "Authorization: Bearer ${MATRIX_TOKEN}" \
          --data "{\"msgtype\": \"m.text\", \"body\": \"${MESSAGE}\"}" \
          --max-time 10 \
@@ -18,18 +20,16 @@ function send_message(){
 # Possible actions: error, pre-backup, post-backup
 ACTION="${1}"
 
-if [ "${WEBHOOK_URL}" != "**None**" ]; then
-    case "${ACTION}" in
-        "error")
-            echo "Execute error webhook call to ${WEBHOOK_URL}"
-            send_message "Can NOT make backup from ${HOST}"
-            ;;
-        "pre-backup")
-            echo "Going to make backup"
-            ;;
-        "post-backup")
-            echo "Execute post-backup webhook call to ${WEBHOOK_URL}"
-            send_message "Backup done from ${HOST}"
-            ;;
-    esac
-fi
+case "${ACTION}" in
+    "error")
+        echo "Execute error webhook"
+        send_message "⚠️Can NOT make backup from ${BACKUP_HOST} on ${DATE}"
+        ;;
+    "pre-backup")
+        echo "Going to make backup"
+        ;;
+    "post-backup")
+        echo "Execute post-backup"
+        send_message "✅ Backup done from ${BACKUP_HOST} on ${DATE}"
+        ;;
+esac
