@@ -1,6 +1,7 @@
 #!/bin/sh
-set -eo
+#set -eo
 
+CONFIG_FILE="/config.json"
 HOOKS_DIR="/hooks"
 BACKUP_DIR=${BACKUP_DIR:-/backup}
 if [ -d "${HOOKS_DIR}" ]; then
@@ -18,48 +19,54 @@ fi
 # Print date
 echo "=== Doing backup at $(date) ==="
 
-# Make backup
-if [[ "$MOUNTED_FOLDER" == */ ]];then
-    source="${MOUNTED_FOLDER::-1}"
-else
-    source="$MOUNTED_FOLDER"
+# Mariadb
+if [[ ! -d "/backup" ]]; then
+    mkdir "/backup"
 fi
+cat "$CONFIG_FILE" | jq -r '.mariadb[] | .host + "|" + .port + "|" + .password' | while IFS="|" read -r MARIADB_HOST MARIADB_PORT MARIADB_PASSWORD
+do
+    echo "=== Backup Mariadb ${MARIADB_HOST} ==="
+    mariadb-dump --all-databases \
+                 --host=$MARIADB_HOST \
+                 --port=$MARIADB_PORT \
+                 --password=$MARIADB_PASSWORD > /backup/${MARIADB_HOST}_dump.sql
+done
 
-MONTHLY_DIR="${BACKUP_DIR}/monthly/${VOLUME}-$(date +%Y%m)"
+echo "=== Start backup at $BORG_REPOSITORY ==="
 
-DAY=$(date +%Y%m%d)
-MONTH=$(date +%Y%m)
-if [[ ! -d "$MONTHLY_DIR" ]];then
-    mkdir -p "$MONTHLY_DIR"
-    echo "Full backup"
-else
-    echo "Incremental backup"
-    find "${MONTHLY_DIR}/${DAY}.tar.gz" -type f
-    if [[ $? -ne 0 ]]; then
-        echo "Existing backup. Clean it"
-        rm -rf "${MONTHLY_DIR}/${DAY}.tar.gz"
-        rm -rf "${MONTHLY_DIR}/${DAY}.snap"
-    fi
-    # find last snap
-    SNAP=$(find "${MONTHLY_DIR}" -type f -name "*.snap" | sort | tail -1)
-    if [[ $? -eq 0 ]]; then
-        echo "Existing snap. Copy it"
-        cp "$SNAP" "${MONTHLY_DIR}/${DAY}.snap"
-    fi
-fi
-echo "Making tarball"
-tar cvzpf "${MONTHLY_DIR}/${DAY}.tar.gz" -g "${MONTHLY_DIR}/${DAY}.snap" "$source"
-echo "Backup created successfully"
-
-echo "Clean Months"
-number_of_months=$(find "${BACKUP_DIR}/monthly/" -type d -not -path "${BACKUP_DIR}/monthly/" | wc -l)
-echo "Current number of months: $number_of_months"
-if [[ $number_of_months -gt $KEEP_MONTHS ]]; then
-    to_remove=$((number_of_months - KEEP_MONTHS))
-    for dir in $(find "${BACKUP_DIR}/monthly/" -type d -not -path "${BACKUP_DIR}/monthly/" | sort | head -n $to_remove); do
-        echo rm -rf "$dir"
-    done
-fi
+# Backup
+INCLUDE=$(cat "$CONFIG_FILE" | jq -r '.include | join(" ")')
+echo "Include: $INCLUDE"
+EXCLUDE=$(cat "$CONFIG_FILE" | jq -r '.exclude | map("--exclude \"" + . + "\"") | join(" ")')
+echo "Exclude: $EXCLUDE"
+WITHIN=$(cat "$CONFIG_FILE" | jq -r '.prune.within')
+echo "Within: $WITHIN"
+WEEKLY=$(cat "$CONFIG_FILE" | jq -r '.prune.weekly')
+echo "Weekly: $WEEKLY"
+MONTHLY=$(cat "$CONFIG_FILE" | jq -r '.prune.monthly')
+echo "Monthly: $MONTHLY"
+cat "$CONFIG_FILE" | jq -r '.repositories[] | .bin + "|" + .path + "|" + .pass' | while IFS="|" read -r BORG_BIN BORG_REPOSITORY BORG_PASSPHRASE
+do
+    echo "=== Start backup at $BORG_REPOSITORY ==="
+    echo "Borg binary: ${BORG_BIN}"
+    echo "Passphrase: ${BORG_PASSPHRASE}"
+    export BORG_PASSPHRASE
+    borg create -v --stats \
+         "$BORG_REPOSITORY"::'{hostname}-{now:%Y-%m-%d}' \
+         $INCLUDE \
+         $EXCLUDE \
+         --remote-path "$BORG_BIN"
+    echo "=== End backup and start prune at $BORG_REPOSITORY ==="
+    borg prune -v                          \
+               --stats                     \
+               --list                      \
+               --keep-within=$WITHIN       \
+               --keep-weekly=$WEEKLY       \
+               --keep-monthly=$MONTHLY     \
+               --remote-path "$BORG_BIN"   \
+               -- "$BORG_REPOSITORY"
+    echo "=== End prune at $BORG_REPOSITORY ==="
+done
 
 # Post-backup hook
 if [ -d "${HOOKS_DIR}" ]; then

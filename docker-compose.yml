@@ -6,13 +6,11 @@ services:
     init: true
     environment:
       SCHEDULE: "0 3 * * *"
-      BACKUP_DIR: "/backup"
-      VOLUME: "sample1"
-      MOUNTED_FOLDER: "/tmp/folder1"
-      KEEP_MONTHS: 3
     volumes:
-      - backup:/backup:rw
-      - sample1:/tmp/folder1:ro
+      - ./config.json:/config.json
+      - ./config_ssh.txt:/config_ssh.txt
+      - ./id_backupuser:/root/.ssh/id_backupuser
+      - ./tmp/ejemplo:/tmp/ejemplo
 
 volumes:
   backup: {}

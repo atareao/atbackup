@@ -25,6 +25,10 @@
 set -o errexit
 set -o nounset
 
+echo "=== Create ssh confi ==="
+cp /config_ssh.txt ~/.ssh/config
+chmod 600 ~/.ssh/config
+
 echo "=== Generate crontab.txt ==="
 echo "$HOME"
 SCHEDULE="${SCHEDULE:-0 2 * * *}"
