@@ -32,7 +32,7 @@ chmod 600 ~/.ssh/config
 echo "=== Generate crontab.txt ==="
 echo "$HOME"
 SCHEDULE="${SCHEDULE:-0 2 * * *}"
-echo "${SCHEDULE} /bin/sh /backup.sh >> /proc/1/fd/1" >> /cronitab/root
+echo "${SCHEDULE} /bin/sh /backup.sh >> /proc/1/fd/1" > /cronitab/root
 
 LOGLEVEL=${LOGLEVEL:-debug}
 echo "Set log level to '${LOGLEVEL}'"
